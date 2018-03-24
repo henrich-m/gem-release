@@ -32,7 +32,8 @@ module Gem
           host:    'Push to a compatible host other than rubygems.org',
           key:     'Use the API key from ~/.gem/credentials',
           tag:     'Shortcut for running the `gem tag` command',
-          push:   'Push tag to the remote git repository',
+          push:    'Push tag to the remote git repository',
+          github:  'Create a GitHub release',
           recurse: 'Recurse into directories that contain gemspec files'
         }
 
@@ -46,6 +47,10 @@ module Gem
 
         opt '-t', '--tag', descr(:tag) do |value|
           opts[:tag] = value
+        end
+
+        opt '-g', '--github', descr(:github) do |value|
+          opts[:github] = value
         end
 
         opt '-p', '--push', descr(:push) do |value|
@@ -73,7 +78,8 @@ module Gem
             validate
             release
           end
-          tag if opts[:tag]
+          tag    if opts[:tag]
+          github if opts[:github]
         end
 
         private
@@ -90,16 +96,20 @@ module Gem
             cleanup
           end
 
-          def tag
-            Tag.new(context, args, opts).run
-          end
-
           def build
             gem_cmd :build, gem.spec_filename
           end
 
           def push
             gem_cmd :push, gem.filename, *push_args
+          end
+
+          def tag
+            Tag.new(context, args, opts).run
+          end
+
+          def github
+            GitHub.new(context, args, opts).run
           end
 
           def push_args
